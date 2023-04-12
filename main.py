@@ -28,16 +28,21 @@ SQUARE = np.array([(0,0), (0,1), (1,1), (1,0)])
 
 Actions = Enum('Actions', ['FORWARD', 'ROTATE'])
 action_cost = {
-    Actions.FORWARD: 2,
-    Actions.ROTATE: 1
+    Actions.FORWARD: 1,
+    Actions.ROTATE: 0
 }
 MapValues = Enum('MapValues', ['EMPTY', 'BARRIER', 'FRONTIER', 'CLOSED'])
 
 class Node:
-    def __init__(self, player, actions=None, cost=0):
+    def __init__(self, player, actions=None, g=0, h=0):
         self.player = player
         self.actions = actions if actions is not None else []
-        self.cost = cost
+        self.g = g
+        self.h = h
+        
+    @property
+    def cost(self):
+        return self.g + self.h
         
     def __eq__(self, other):
         """Overrides the default implementation"""
@@ -113,7 +118,9 @@ class Target:
         self.col = None
 
 
-    
+def manhattan_distance(player, target):
+        return abs(player.row - target.row) + abs(player.col - target.col)  
+       
 class Game:
     def __init__(self, window, real_width, n_side):
         self.window = window
@@ -265,7 +272,9 @@ class Game:
         self.plan_algorithm(callback)
         
     def plan_algorithm(self,callback):
-        self.breadth_first_search(callback)
+        # self.breadth_first_search(callback)
+        # self.uniform_cost_search(callback)
+        self.a_star_search(callback)
     
     def breadth_first_search(self,callback):
         frontier = FIFOQueue()
@@ -297,10 +306,10 @@ class Game:
             # Update callback
             callback(frontier, closed)
         self.plan = plan
-        
+    
     def uniform_cost_search(self,callback):
         frontier = PriorityQueue()
-        current = Node(player=self.player.copy(),actions=[],cost=0)
+        current = Node(player=self.player.copy(),actions=[],g=0)
         frontier.push(current, current.cost)
         closed = set()
         plan = []
@@ -323,7 +332,41 @@ class Game:
                     child_node = Node(
                         child_player,
                         actions = current.actions + [action],
-                        cost=current.cost + action_cost[action]
+                        g=current.cost + action_cost[action]
+                    )
+                    frontier.push(child_node, child_node.cost)
+            # Update callback
+            callback(frontier, closed)
+        self.plan = plan
+    
+    def a_star_search(self,callback):
+        frontier = PriorityQueue()
+        current = Node(player=self.player.copy(),actions=[],g=0, h=manhattan_distance(self.player, self.target))
+        frontier.push(current, current.cost)
+        closed = set()
+        plan = []
+        while len(frontier) > 0:
+            current = frontier.pop()
+            # if current in closed continue
+            if current in closed:
+                continue
+            # if current is target return actions
+            if current.player.row == self.target.row and current.player.col == self.target.col:
+                plan = current.actions
+                break
+            # add current to closed
+            closed.add(current)
+            # Expand children
+            for action in Actions:
+                child_player = current.player.copy()
+                child_player.act(action)
+                if self.is_valid_pos(child_player.row, child_player.col):
+                    g = current.g + action_cost[action]
+                    h = manhattan_distance(child_player, self.target)
+                    child_node = Node(
+                        child_player,
+                        actions = current.actions + [action],
+                        g=g, h=h
                     )
                     frontier.push(child_node, child_node.cost)
             # Update callback
