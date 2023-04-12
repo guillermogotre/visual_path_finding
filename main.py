@@ -1,11 +1,9 @@
 import time
 import pygame
-import math
-from queue import PriorityQueue
 import numpy as np
 from dataclasses import dataclass
 from enum import Enum
-from collections import deque
+from queues import FIFOQueue
 
 WIDTH = 800
 N_SIDE = 15
@@ -29,6 +27,10 @@ SMALL_TRIANGLE = np.array([(0.33, 0.33),(0.5, 0),(0.66, 0.33)])
 SQUARE = np.array([(0,0), (0,1), (1,1), (1,0)])
 
 Actions = Enum('Actions', ['FORWARD', 'ROTATE'])
+action_cost = {
+    Actions.FORWARD: 2,
+    Actions.ROTATE: 1
+}
 MapValues = Enum('MapValues', ['EMPTY', 'BARRIER', 'FRONTIER', 'CLOSED'])
 
 class Node:
@@ -265,12 +267,12 @@ class Game:
         self.breadth_first_search(callback)
     
     def breadth_first_search(self,callback):
-        frontier = deque()
-        frontier.append(Node(player=self.player,actions=[]))
+        frontier = FIFOQueue()
+        frontier.push(Node(player=self.player.copy(),actions=[]))
         closed = set()
         plan = []
         while len(frontier) > 0:
-            current = frontier.popleft()
+            current = frontier.pop()
             # if current in closed continue
             if current in closed:
                 continue
@@ -289,11 +291,8 @@ class Game:
                         child_player,
                         actions = current.actions + [action]
                     )
-                    frontier.append(child_node)
-            # Update map
-            # self.update_plan_map(frontier, closed)
-            # self.draw()
-            # time.sleep(0.01)
+                    frontier.push(child_node)
+            # Update callback
             callback(frontier, closed)
         self.plan = plan
 
