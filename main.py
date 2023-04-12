@@ -262,7 +262,40 @@ class Game:
         self.plan_algorithm(callback)
         
     def plan_algorithm(self,callback):
-        pass
+        self.breadth_first_search(callback)
+    
+    def breadth_first_search(self,callback):
+        frontier = deque()
+        frontier.append(Node(player=self.player,actions=[]))
+        closed = set()
+        plan = []
+        while len(frontier) > 0:
+            current = frontier.popleft()
+            # if current in closed continue
+            if current in closed:
+                continue
+            # if current is target return actions
+            if current.player.row == self.target.row and current.player.col == self.target.col:
+                plan = current.actions
+                break
+            # add current to closed
+            closed.add(current)
+            # Expand children
+            for action in Actions:
+                child_player = current.player.copy()
+                child_player.act(action)
+                if self.is_valid_pos(child_player.row, child_player.col):
+                    child_node = Node(
+                        child_player,
+                        actions = current.actions + [action]
+                    )
+                    frontier.append(child_node)
+            # Update map
+            # self.update_plan_map(frontier, closed)
+            # self.draw()
+            # time.sleep(0.01)
+            callback(frontier, closed)
+        self.plan = plan
 
 if __name__ == "__main__":
     game = Game(WIN, WIDTH, N_SIDE)
