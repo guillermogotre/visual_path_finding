@@ -121,9 +121,11 @@ class Target:
 
 def manhattan_distance(player, target):
         return abs(player.row - target.row) + abs(player.col - target.col)  
-       
+
+Methods = Enum('Methods', ['BFS', 'Dijkstra', 'AStar'])
+
 class Game:
-    def __init__(self, window, real_width, n_side):
+    def __init__(self, window, real_width, n_side, method_name):
         self.window = window
         self.N = n_side
         self.width = real_width
@@ -131,8 +133,18 @@ class Game:
         self.target = Target()
         
         self.map = self.empty_map(n_side)
-        # self.map = np.eye(n_side, dtype=int)
+        
         self.plan = [] 
+        self.update_method(method_name)
+        
+    
+    def update_method(self, method_name):
+        self.method_name = method_name
+        self.path_finding_method = {
+            Methods.BFS: self.breadth_first_search,
+            Methods.Dijkstra: self.uniform_cost_search,
+            Methods.AStar: self.a_star_search
+        }[method_name]
         
     @staticmethod
     def empty_map(n_side):
@@ -218,6 +230,13 @@ class Game:
         self.draw_plan()
         # Draw grid
         self.draw_grid()
+        
+        # Write text
+        pygame.font.init()
+        my_font = pygame.font.SysFont('Comic Sans MS', 30)
+        text_surface = my_font.render(self.method_name.name, False, (0, 0, 0))
+        win.blit(text_surface, dest=(5,5))
+        
         pygame.display.update()
         
     def get_clicked_pos(self, pos):
@@ -275,7 +294,8 @@ class Game:
     def plan_algorithm(self,callback):
         # self.breadth_first_search(callback)
         # self.uniform_cost_search(callback)
-        self.a_star_search(callback)
+        # self.a_star_search(callback)
+        self.path_finding_method(callback)
     
     def breadth_first_search(self,callback):
         frontier = FIFOQueue()
@@ -375,7 +395,7 @@ class Game:
         self.plan = plan
 
 if __name__ == "__main__":
-    game = Game(WIN, WIDTH, N_SIDE)
+    game = Game(WIN, WIDTH, N_SIDE, method_name=Methods.BFS)
     run = True
     while run:
         for event in pygame.event.get():
@@ -410,5 +430,11 @@ if __name__ == "__main__":
                         game.player.act(Actions.FORWARD)
                 if event.key == pygame.K_SPACE:
                     plan = game.make_plan()
+                if event.key == pygame.K_1:
+                    game.update_method(Methods.BFS)
+                if event.key == pygame.K_2:
+                    game.update_method(Methods.Dijkstra)
+                if event.key == pygame.K_3:
+                    game.update_method(Methods.AStar)
         game.draw()
         
