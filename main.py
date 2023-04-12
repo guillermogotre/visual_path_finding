@@ -7,6 +7,7 @@ from queues import FIFOQueue, PriorityQueue
 
 WIDTH = 800
 N_SIDE = 15
+SLEEP = 10 # ms
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Path Finding Algorithm")
 
@@ -268,7 +269,7 @@ class Game:
         def callback(frontier, closed):
             self.update_plan_map(frontier, closed)
             self.draw()
-            pygame.time.delay(10)
+            pygame.time.delay(SLEEP)
         self.plan_algorithm(callback)
         
     def plan_algorithm(self,callback):
