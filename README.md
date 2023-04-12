@@ -12,6 +12,7 @@ How to use:
     - ```R```: Rotate player
     - ```F```: Forward player
     - ```C```: Clear game
+    - ```Space```: Get plan
     - ```1```: BFS
     - ```2```: Dijkstra
     - ```3```: A-Start
