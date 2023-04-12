@@ -3,7 +3,7 @@ import pygame
 import numpy as np
 from dataclasses import dataclass
 from enum import Enum
-from queues import FIFOQueue
+from queues import FIFOQueue, PriorityQueue
 
 WIDTH = 800
 N_SIDE = 15
@@ -28,15 +28,16 @@ SQUARE = np.array([(0,0), (0,1), (1,1), (1,0)])
 
 Actions = Enum('Actions', ['FORWARD', 'ROTATE'])
 action_cost = {
-    Actions.FORWARD: 2,
-    Actions.ROTATE: 1
+    Actions.FORWARD: 1,
+    Actions.ROTATE: 0
 }
 MapValues = Enum('MapValues', ['EMPTY', 'BARRIER', 'FRONTIER', 'CLOSED'])
 
 class Node:
-    def __init__(self, player, actions=None):
+    def __init__(self, player, actions=None, cost=0):
         self.player = player
         self.actions = actions if actions is not None else []
+        self.cost = cost
         
     def __eq__(self, other):
         """Overrides the default implementation"""
@@ -267,8 +268,9 @@ class Game:
         self.breadth_first_search(callback)
     
     def breadth_first_search(self,callback):
-        frontier = FIFOQueue()
-        frontier.push(Node(player=self.player.copy(),actions=[]))
+        frontier = PriorityQueue()
+        current = Node(player=self.player.copy(),actions=[],cost=0)
+        frontier.push(current, current.cost)
         closed = set()
         plan = []
         while len(frontier) > 0:
@@ -289,9 +291,10 @@ class Game:
                 if self.is_valid_pos(child_player.row, child_player.col):
                     child_node = Node(
                         child_player,
-                        actions = current.actions + [action]
+                        actions = current.actions + [action],
+                        cost=current.cost + action_cost[action]
                     )
-                    frontier.push(child_node)
+                    frontier.push(child_node, child_node.cost)
             # Update callback
             callback(frontier, closed)
         self.plan = plan
