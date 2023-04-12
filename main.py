@@ -28,8 +28,8 @@ SQUARE = np.array([(0,0), (0,1), (1,1), (1,0)])
 
 Actions = Enum('Actions', ['FORWARD', 'ROTATE'])
 action_cost = {
-    Actions.FORWARD: 1,
-    Actions.ROTATE: 0
+    Actions.FORWARD: 2,
+    Actions.ROTATE: 1
 }
 MapValues = Enum('MapValues', ['EMPTY', 'BARRIER', 'FRONTIER', 'CLOSED'])
 
@@ -268,6 +268,37 @@ class Game:
         self.breadth_first_search(callback)
     
     def breadth_first_search(self,callback):
+        frontier = FIFOQueue()
+        current = Node(player=self.player.copy(),actions=[])
+        frontier.push(current)
+        closed = set()
+        plan = []
+        while len(frontier) > 0:
+            current = frontier.pop()
+            # if current in closed continue
+            if current in closed:
+                continue
+            # if current is target return actions
+            if current.player.row == self.target.row and current.player.col == self.target.col:
+                plan = current.actions
+                break
+            # add current to closed
+            closed.add(current)
+            # Expand children
+            for action in Actions:
+                child_player = current.player.copy()
+                child_player.act(action)
+                if self.is_valid_pos(child_player.row, child_player.col):
+                    child_node = Node(
+                        child_player,
+                        actions = current.actions + [action]
+                    )
+                    frontier.push(child_node)
+            # Update callback
+            callback(frontier, closed)
+        self.plan = plan
+        
+    def uniform_cost_search(self,callback):
         frontier = PriorityQueue()
         current = Node(player=self.player.copy(),actions=[],cost=0)
         frontier.push(current, current.cost)
