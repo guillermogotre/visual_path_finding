@@ -1,4 +1,6 @@
 import time
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import numpy as np
 from dataclasses import dataclass
@@ -293,11 +295,13 @@ class Game:
     def make_plan(self):
         self.tidy_map()
         self.plan = []
-        def callback(frontier, closed):
+        def callback(current,frontier, closed):
             self.update_plan_map(frontier, closed)
             self.open = len(frontier)
             self.closed = len(closed)
             self.draw()
+            self.draw_poly(SMALL_TRIANGLE, current.player.row, current.player.col, WHITE, current.player.ori * 90)
+            pygame.display.update()
             pygame.time.delay(SLEEP)
         self.plan_algorithm(callback)
         
@@ -335,7 +339,7 @@ class Game:
                     )
                     frontier.push(child_node)
             # Update callback
-            callback(frontier, closed)
+            callback(current, frontier, closed)
         self.plan = plan
     
     def uniform_cost_search(self,callback):
@@ -367,7 +371,7 @@ class Game:
                     )
                     frontier.push(child_node, child_node.cost)
             # Update callback
-            callback(frontier, closed)
+            callback(current, frontier, closed)
         self.plan = plan
     
     def a_star_search(self,callback):
@@ -401,7 +405,7 @@ class Game:
                     )
                     frontier.push(child_node, child_node.cost)
             # Update callback
-            callback(frontier, closed)
+            callback(current, frontier, closed)
         self.plan = plan
 
 if __name__ == "__main__":
