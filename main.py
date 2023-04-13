@@ -5,7 +5,7 @@ import pygame
 import numpy as np
 from dataclasses import dataclass
 from enum import Enum
-from queues import FIFOQueue, PriorityQueue
+from queues import FIFOQueue, LIFOStack, PriorityQueue
 
 WIDTH = 800
 N_SIDE = 15
@@ -124,7 +124,7 @@ class Target:
 def manhattan_distance(player, target):
         return abs(player.row - target.row) + abs(player.col - target.col)  
 
-Methods = Enum('Methods', ['BFS', 'Dijkstra', 'AStar'])
+Methods = Enum('Methods', ['BFS', 'DFS', 'Dijkstra', 'AStar'])
 
 class Game:
     def __init__(self, window, real_width, n_side, method_name):
@@ -147,6 +147,7 @@ class Game:
         self.method_name = method_name
         self.path_finding_method = {
             Methods.BFS: self.breadth_first_search,
+            Methods.DFS: self.depth_first_search,
             Methods.Dijkstra: self.uniform_cost_search,
             Methods.AStar: self.a_star_search
         }[method_name]
@@ -307,6 +308,7 @@ class Game:
         
     def plan_algorithm(self,callback):
         # self.breadth_first_search(callback)
+        # self.depth_first_search(callback)
         # self.uniform_cost_search(callback)
         # self.a_star_search(callback)
         self.path_finding_method(callback)
@@ -330,6 +332,37 @@ class Game:
             closed.add(current)
             # Expand children
             for action in Actions:
+                child_player = current.player.copy()
+                child_player.act(action)
+                if self.is_valid_pos(child_player.row, child_player.col):
+                    child_node = Node(
+                        child_player,
+                        actions = current.actions + [action]
+                    )
+                    frontier.push(child_node)
+            # Update callback
+            callback(current, frontier, closed)
+        self.plan = plan
+        
+    def depth_first_search(self, callback):
+        frontier = LIFOStack()
+        current = Node(player=self.player.copy(),actions=[])
+        frontier.push(current)
+        closed = set()
+        plan = []
+        while len(frontier) > 0:
+            current = frontier.pop()
+            # if current in closed continue
+            if current in closed:
+                continue
+            # if current is target return actions
+            if current.player.row == self.target.row and current.player.col == self.target.col:
+                plan = current.actions
+                break
+            # add current to closed
+            closed.add(current)
+            # Expand children
+            for action in list(Actions)[::-1]:
                 child_player = current.player.copy()
                 child_player.act(action)
                 if self.is_valid_pos(child_player.row, child_player.col):
@@ -447,8 +480,10 @@ if __name__ == "__main__":
                 if event.key == pygame.K_1:
                     game.update_method(Methods.BFS)
                 if event.key == pygame.K_2:
-                    game.update_method(Methods.Dijkstra)
+                    game.update_method(Methods.DFS)
                 if event.key == pygame.K_3:
+                    game.update_method(Methods.Dijkstra)
+                if event.key == pygame.K_4:
                     game.update_method(Methods.AStar)
         game.draw()
         
