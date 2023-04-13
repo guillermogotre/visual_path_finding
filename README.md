@@ -1,7 +1,11 @@
 # visual_path_finding
 Simple Python path-finding program for teaching. The player can only go forward or turn right.
 
-How to use:
+## Pending optimizations
+- _Don't add already closed nodes to the_ ```frontier``` _on node expansion_.
+- _Check if the expanded node is the same as the ```target``` on node expansion_.
+
+## How to use
 - Left-click: 
     1. Player
     2. Target
@@ -16,7 +20,8 @@ How to use:
     - ```2```: Dijkstra
     - ```3```: A-Start
 
-Color-coding:
+
+## Color-coding
 - Red: Player
 - Purple: Target
 - Black: Wall
@@ -24,5 +29,5 @@ Color-coding:
 - Green: Open nodes
 - Orange: Plan steps
 
-Screenshot:
+## Screenshot
 ![A-Star Screenshot](images/screenshot.png)
