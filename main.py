@@ -137,6 +137,9 @@ class Game:
         self.plan = [] 
         self.update_method(method_name)
         
+        self.open = 0
+        self.closed = 0
+        
     
     def update_method(self, method_name):
         self.method_name = method_name
@@ -236,6 +239,8 @@ class Game:
         my_font = pygame.font.Font('./fonts/roboto.ttf', 40)
         text_surface = my_font.render(self.method_name.name, False, (0, 0, 0))
         win.blit(text_surface, dest=(5,5))
+        text_surface = my_font.render(f'C:{self.closed} F:{self.open}', False, (0, 0, 0))
+        win.blit(text_surface, dest=(5,45))
         
         pygame.display.update()
         
@@ -268,6 +273,9 @@ class Game:
         self.map = self.empty_map(self.N)
         self.plan = []
         
+        self.open = 0
+        self.closed = 0
+        
     def update_plan_map(self, frontier, closed):
         for node in frontier:
             row, col = node.player.row, node.player.col
@@ -287,6 +295,8 @@ class Game:
         self.plan = []
         def callback(frontier, closed):
             self.update_plan_map(frontier, closed)
+            self.open = len(frontier)
+            self.closed = len(closed)
             self.draw()
             pygame.time.delay(SLEEP)
         self.plan_algorithm(callback)
