@@ -16,6 +16,7 @@ Simple Python path-finding program for teaching. The player can only go forward 
     - ```R```: Rotate player
     - ```F```: Forward player
     - ```C```: Clear game
+    - ```Space```: Compute plan
     - ```1```: BFS
     - ```2```: Dijkstra
     - ```3```: A-Start
