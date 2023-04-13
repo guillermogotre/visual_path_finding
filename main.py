@@ -233,7 +233,7 @@ class Game:
         
         # Write text
         pygame.font.init()
-        my_font = pygame.font.SysFont('Comic Sans MS', 30)
+        my_font = pygame.font.Font('./fonts/roboto.ttf', 40)
         text_surface = my_font.render(self.method_name.name, False, (0, 0, 0))
         win.blit(text_surface, dest=(5,5))
         
