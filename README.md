@@ -18,8 +18,9 @@ Simple Python path-finding program for teaching. The player can only go forward 
     - ```C```: Clear game
     - ```Space```: Compute plan
     - ```1```: BFS
-    - ```2```: Dijkstra
-    - ```3```: A-Start
+    - ```2```: DFS
+    - ```3```: Dijkstra
+    - ```4```: A-Start
 
 
 ## Color-coding
